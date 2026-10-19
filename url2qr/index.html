@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL2QR - QR코드 생성기</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <a href="./"><img src="img/logo.png" alt="URL2QR" class="logo"></a>
+  </header>
+
+  <main>
+    <section id="qr-area" class="hidden">
+      <div class="qr-card">
+        <div id="qrcode" title="클릭하면 JPG로 다운로드됩니다"></div>
+        <p class="hint">QR코드를 클릭하면 JPG 파일로 다운로드됩니다</p>
+        <p id="qr-url" class="qr-url"></p>
+      </div>
+    </section>
+
+    <section id="input-area" class="center">
+      <p class="guide">QR코드로 만들 URL을 입력하세요</p>
+      <div class="input-box">
+        <input type="url" id="url-input" placeholder="https://example.com" autocomplete="off">
+        <button id="generate-btn">확인</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

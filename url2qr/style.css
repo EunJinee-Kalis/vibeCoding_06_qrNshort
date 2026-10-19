@@ -1,0 +1,99 @@
+:root {
+  --mx: 50%;
+  --my: 50%;
+  --accent: #f5b800;
+  --accent-dark: #d99a00;
+  --text: #3a3a3a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at var(--mx) var(--my), rgba(255, 214, 10, .45) 0%, transparent 45%),
+    radial-gradient(circle at calc(100% - var(--mx)) calc(100% - var(--my)), rgba(255, 159, 190, .35) 0%, transparent 50%),
+    linear-gradient(135deg, #fffbe6 0%, #fff4f0 50%, #eef8ff 100%);
+}
+
+header { position: absolute; top: 20px; left: 24px; z-index: 10; }
+.logo { height: 44px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, .08); }
+
+main { position: relative; width: 100vw; height: 100vh; }
+
+#input-area {
+  position: absolute;
+  left: 50%;
+  width: 90%;
+  max-width: 560px;
+  transform: translate(-50%, -50%);
+  transition: top .6s cubic-bezier(.4, 0, .2, 1);
+  text-align: center;
+}
+#input-area.center { top: 50%; }
+#input-area.bottom { top: 88%; }
+#input-area.bottom .guide { display: none; }
+
+.guide { font-size: 20px; font-weight: 700; margin-bottom: 18px; }
+
+.input-box {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, .75);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, .9);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .06);
+}
+#url-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 17px;
+  padding: 12px 16px;
+}
+#generate-btn {
+  border: none;
+  background: var(--accent);
+  color: #222;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 0 28px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+#generate-btn:hover { background: var(--accent-dark); transform: translateY(-2px); }
+
+#qr-area {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  transition: opacity .6s, transform .6s;
+}
+#qr-area.hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -40%) scale(.95); }
+
+.qr-card {
+  background: #fff;
+  padding: 28px;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .12);
+  text-align: center;
+}
+#qrcode { cursor: pointer; display: inline-block; transition: transform .2s; }
+#qrcode:hover { transform: scale(1.03); }
+#qrcode img, #qrcode canvas { display: block; }
+.hint { margin-top: 14px; font-size: 14px; font-weight: 700; color: #666; }
+.qr-url { margin-top: 6px; font-size: 13px; color: #999; max-width: 260px; word-break: break-all; }
+
+@media (max-height: 640px) {
+  #qr-area { top: 40%; }
+  #qrcode img, #qrcode canvas { width: 200px; height: 200px; }
+}
