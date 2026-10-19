@@ -1,0 +1,76 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+  color: #2b2b2b;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #eef8ff 0%, #fff4f0 50%, #fffbe6 100%);
+}
+
+header { padding: 20px 24px; }
+.back { color: #4a90e2; text-decoration: none; font-weight: 700; }
+.back:hover { text-decoration: underline; }
+
+main { display: flex; justify-content: center; padding: 6vh 16px 40px; }
+
+.card {
+  width: 100%;
+  max-width: 600px;
+  background: #fff;
+  border-radius: 24px;
+  padding: 36px 32px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .08);
+}
+h1 { font-size: 28px; }
+.sub { color: #777; margin: 8px 0 28px; }
+
+label { display: block; font-weight: 700; font-size: 14px; margin: 18px 0 8px; }
+
+.row { display: flex; gap: 8px; }
+.row input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 1px solid #dcdfe4;
+  border-radius: 12px;
+  outline: none;
+}
+.row input:focus { border-color: #4a90e2; box-shadow: 0 0 0 3px rgba(74, 144, 226, .15); }
+#result { background: #f6f8fa; color: #1a5fb4; font-weight: 700; }
+
+.row button {
+  padding: 0 22px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+  background: #4a90e2;
+  white-space: nowrap;
+  transition: background .2s;
+}
+.row button:hover:not(:disabled) { background: #2f74c7; }
+#copy-btn { background: #f5b800; color: #222; }
+#copy-btn:hover:not(:disabled) { background: #d99a00; }
+.row button:disabled, #copy-btn:disabled { background: #c9ced6; color: #fff; cursor: not-allowed; }
+
+.message { margin-top: 16px; min-height: 20px; font-size: 14px; }
+.message.error { color: #d93025; }
+.message.ok { color: #188038; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translate(-50%, 20px);
+  background: #222;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s, transform .3s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
