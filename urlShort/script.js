@@ -23,30 +23,66 @@ function showMessage(text, type) {
   message.className = 'message ' + (type || '');
 }
 
-// is.gd / v.gd 단축 OpenAPI를 JSONP 방식으로 호출
-// (일반 fetch는 CORS 보안정책 때문에 GitHub Pages에서 막히므로 JSONP를 사용)
-function requestJsonp(baseUrl, longUrl) {
+// 시간 제한이 있는 fetch
+function fetchWithTimeout(url, options = {}, ms = 8000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
+// JSONP 방식 호출 (CORS 제한을 받지 않음)
+function jsonp(url, ms = 8000) {
   return new Promise((resolve, reject) => {
-    const cbName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    const cb = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
     const script = document.createElement('script');
-    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 8000);
-
-    function cleanup() {
-      clearTimeout(timer);
-      delete window[cbName];
-      script.remove();
-    }
-
-    window[cbName] = (data) => {
-      cleanup();
-      if (data && data.shorturl) resolve(data.shorturl);
-      else reject(new Error((data && data.errormessage) || 'unknown'));
-    };
+    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, ms);
+    function cleanup() { clearTimeout(timer); delete window[cb]; script.remove(); }
+    window[cb] = (data) => { cleanup(); resolve(data); };
     script.onerror = () => { cleanup(); reject(new Error('network')); };
-    script.src = `${baseUrl}?format=json&callback=${cbName}&url=${encodeURIComponent(longUrl)}`;
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
     document.body.appendChild(script);
   });
 }
+
+const isShortUrl = (s) => typeof s === 'string' && /^https?:\/\/\S+$/.test(s.trim());
+
+// 여러 무료 URL 단축 OpenAPI를 차례로 시도
+const PROVIDERS = [
+  {
+    name: 'is.gd',
+    run: async (u) => {
+      const d = await jsonp('https://is.gd/create.php?format=json&url=' + encodeURIComponent(u));
+      if (d && d.shorturl) return d.shorturl;
+      throw new Error((d && d.errormessage) || 'is.gd 오류');
+    }
+  },
+  {
+    name: 'TinyURL',
+    run: async (u) => {
+      const r = await fetchWithTimeout('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(u));
+      const t = (await r.text()).trim();
+      if (r.ok && isShortUrl(t)) return t;
+      throw new Error('TinyURL 오류');
+    }
+  },
+  {
+    name: 'da.gd',
+    run: async (u) => {
+      const r = await fetchWithTimeout('https://da.gd/s?url=' + encodeURIComponent(u));
+      const t = (await r.text()).trim();
+      if (r.ok && isShortUrl(t)) return t;
+      throw new Error('da.gd 오류');
+    }
+  },
+  {
+    name: 'v.gd',
+    run: async (u) => {
+      const d = await jsonp('https://v.gd/create.php?format=json&url=' + encodeURIComponent(u));
+      if (d && d.shorturl) return d.shorturl;
+      throw new Error((d && d.errormessage) || 'v.gd 오류');
+    }
+  }
+];
 
 async function shorten() {
   const longUrl = normalizeUrl(urlInput.value);
@@ -56,19 +92,22 @@ async function shorten() {
   result.value = '';
   copyBtn.disabled = true;
 
+  const failed = [];
   try {
-    let shortUrl;
-    try {
-      shortUrl = await requestJsonp('https://is.gd/create.php', longUrl);
-    } catch (first) {
-      // is.gd가 실패하면 같은 회사의 v.gd로 다시 시도
-      shortUrl = await requestJsonp('https://v.gd/create.php', longUrl);
+    for (const p of PROVIDERS) {
+      try {
+        const shortUrl = await p.run(longUrl);
+        result.value = shortUrl;
+        copyBtn.disabled = false;
+        showMessage(`단축 URL이 만들어졌습니다. (${p.name})`, 'ok');
+        return;
+      } catch (err) {
+        failed.push(p.name);
+        console.warn(p.name, '실패:', err);
+      }
     }
-    result.value = shortUrl;
-    copyBtn.disabled = false;
-    showMessage('단축 URL이 만들어졌습니다.', 'ok');
-  } catch (err) {
-    showMessage('URL 단축에 실패했습니다. 주소가 올바른지 확인하고 다시 시도해 주세요.', 'error');
+    showMessage('URL 단축에 실패했습니다. (시도한 서비스: ' + failed.join(', ') +
+      ') 네트워크에서 단축 서비스가 차단되었을 수 있습니다.', 'error');
   } finally {
     shortenBtn.textContent = '단축하기';
     shortenBtn.disabled = urlInput.value.trim() === '';
